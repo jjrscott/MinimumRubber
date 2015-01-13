@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6724" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6711"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="GiJ-Y6-UAu">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tWM-vc-OWS">
+                                <rect key="frame" x="16" y="12" width="544" height="344"/>
+                                <color key="backgroundColor" red="0.80689264110000003" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZuQ-u9-M3y">
+                                <rect key="frame" x="16" y="384" width="544" height="124"/>
+                                <color key="backgroundColor" red="1" green="0.023573720190000001" blue="0.0" alpha="0.22" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="tWM-vc-OWS" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="034-do-0Vc"/>
+                            <constraint firstItem="tWM-vc-OWS" firstAttribute="width" secondItem="GiJ-Y6-UAu" secondAttribute="width" constant="-40" id="8mJ-3V-73O"/>
+                            <constraint firstItem="tWM-vc-OWS" firstAttribute="height" secondItem="ZuQ-u9-M3y" secondAttribute="height" id="Frs-Lh-Pf4"/>
+                            <constraint firstItem="tWM-vc-OWS" firstAttribute="centerX" secondItem="ZuQ-u9-M3y" secondAttribute="centerX" id="T18-04-VCR"/>
+                            <constraint firstAttribute="centerX" secondItem="tWM-vc-OWS" secondAttribute="centerX" id="UQ4-61-FWN"/>
+                            <constraint firstItem="ZuQ-u9-M3y" firstAttribute="top" secondItem="tWM-vc-OWS" secondAttribute="bottom" constant="20" id="fz9-lc-cVR"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="ZuQ-u9-M3y" secondAttribute="bottom" constant="20" id="kJi-qR-9jW"/>
+                            <constraint firstAttribute="centerX" secondItem="ZuQ-u9-M3y" secondAttribute="centerX" id="myx-0D-0IA"/>
+                            <constraint firstItem="tWM-vc-OWS" firstAttribute="width" secondItem="ZuQ-u9-M3y" secondAttribute="width" id="qfy-jt-OsN"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="_label" destination="tWM-vc-OWS" id="8Qu-Aw-rbW"/>
+                        <outlet property="_textView" destination="ZuQ-u9-M3y" id="dwh-ru-goE"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="306" y="399"/>
+        </scene>
+    </scenes>
+</document>
