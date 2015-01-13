@@ -19,7 +19,7 @@
  @param startCharCode
     The Unicode code point for the first glyph (note that the first CGPath in the array is used for .notdef, startCharCode is used for the 2nd CGPath onwards)
  @param paths
-    The paths to be converted to glyphs. One path per glyph.
+    An array of CGPaths to be converted to glyphs. One CGPath per glyph.
  @param emSize
     The size of one em. This will determine the size of your glyphs relative to glyphs from other fonts.
  @return
