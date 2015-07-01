@@ -47,28 +47,14 @@
     CGPathAddEllipseInRect(path, &foo, CGRectInset(rect, baa, baa) );
     //    CGPathAddRect(path, NULL, CGRectMake(0, 0, 500, 500));
     
-    CGMutablePathRef quadPath = CGPathCreateMutable();
-    
-    MRPathApply(path, ^(const CGPathElement *element, BOOL *stop) {
-        if (element->type == kCGPathElementAddCurveToPoint)
-        {
-            MRPathAddQuadToPointWithCurve(quadPath, NULL, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
-        }
-        else
-        {
-            MRPathAddElement(quadPath, NULL, element);
-        }
-    });
-    CFRelease(path);
-    
     CFMutableArrayRef paths = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
     CFArrayAppendValue(paths, emptyPath);
-    CFArrayAppendValue(paths, quadPath);
+    CFArrayAppendValue(paths, path);
     
     
     
     CFRelease(emptyPath);
-    CFRelease(quadPath);
+    CFRelease(path);
     
     
     CFDataRef fontData = MRFontDataCreateWithNameAndPaths(CFSTR(FONT_NAME), 0xe000, paths, emSize);

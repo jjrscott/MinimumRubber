@@ -54,6 +54,30 @@ UInt32 _MRDataChecksum(CFDataRef data)
     return checksum;
 }
 
+CGPathRef _MRCleanPath(CGPathRef path, const CGAffineTransform *m)
+{
+    CGMutablePathRef cleanPath = CGPathCreateMutable();
+    
+    __block CGPathElementType previousType = kCGPathElementCloseSubpath;
+    MRPathApply(path, ^(const CGPathElement *element, BOOL *stop) {
+        if (element->type == kCGPathElementAddCurveToPoint)
+        {
+            MRPathAddQuadToPointWithCurve(cleanPath, m, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
+        }
+        else
+        {
+            if (element->type == kCGPathElementMoveToPoint && previousType != kCGPathElementCloseSubpath)
+            {
+                CGPathCloseSubpath(cleanPath);
+            }
+            MRPathAddElement(cleanPath, m, element);
+        }
+        previousType = element->type;
+    });
+    
+    return cleanPath;
+}
+
 CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCode, CFArrayRef paths, CGFloat emSize)
 {
     CFMutableDataRef cmapData = CFDataCreateMutable(NULL, 0);
@@ -91,23 +115,23 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
             CFMutableDataRef xCoordinates = CFDataCreateMutable(NULL, 0);
             CFMutableDataRef yCoordinates = CFDataCreateMutable(NULL, 0);
             
-            __block CFIndex endPointOfPreviousContour = 0;
             __block SInt16 previousX = 0;
             __block SInt16 previousY = 0;
             __block CFIndex numberOfContours = 0;
             __block CFIndex numberOfPoints = 0;
             
-            MRPathApply(path, ^(const CGPathElement *element, BOOL *stop) {
+            CGPathRef cleanPath = _MRCleanPath(path, NULL);
+            
+            MRPathApply(cleanPath, ^(const CGPathElement *element, BOOL *stop) {
                 CFIndex pointsCount = MRPathElementTypePointsCount(element->type);
                 
                 if (element->type == kCGPathElementCloseSubpath)
                 {
                     numberOfContours++;
-                    appendUInt16(endPtsOfContours, endPointOfPreviousContour-1);
+                    appendUInt16(endPtsOfContours, numberOfPoints-1);
                 }
                 else
                 {
-                    endPointOfPreviousContour += pointsCount;
                     numberOfPoints += pointsCount;
                     
                     for (CFIndex index=0; index<pointsCount; index++)
@@ -124,9 +148,9 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
                         previousY = y;
                     }
                 }
-                
-
             });
+            
+            CFRelease(cleanPath);
             
             appendSInt16(glyfData, numberOfContours);
             appendSInt16(glyfData, CGRectGetMinX(pathBoundingBox));
@@ -164,7 +188,7 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
             appendUInt8(glyfData, 0);
         }
 
-        appendUInt32(locaData, CFDataGetLength(glyfData));
+        appendUInt32(locaData, (UInt32) CFDataGetLength(glyfData));
     }
     
     // post table
