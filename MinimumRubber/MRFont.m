@@ -74,12 +74,10 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
     CFIndex maxPoints = 0;
     CFIndex maxContours = 0;
     
+    appendUInt32(locaData, 0);
+    
     for (CFIndex pathIndex=0; pathIndex<pathsCount; pathIndex++)
     {
-        // loca table
-        
-        appendUInt32(locaData, (UInt32) CFDataGetLength(glyfData));
-
         // glyf table
         
         CGPathRef path = CFArrayGetValueAtIndex(paths, pathIndex);
@@ -94,8 +92,10 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
             CFMutableDataRef yCoordinates = CFDataCreateMutable(NULL, 0);
             
             __block CFIndex endPointOfPreviousContour = 0;
-            __block CGPoint previousPoint = CGPointZero;
+            __block SInt16 previousX = 0;
+            __block SInt16 previousY = 0;
             __block CFIndex numberOfContours = 0;
+            __block CFIndex numberOfPoints = 0;
             
             MRPathApply(path, ^(const CGPathElement *element, BOOL *stop) {
                 CFIndex pointsCount = MRPathElementTypePointsCount(element->type);
@@ -108,24 +108,20 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
                 else
                 {
                     endPointOfPreviousContour += pointsCount;
-
-                    if (pointsCount == 3)
-                    {
-                        appendUInt8(flags, 0);
-                        appendUInt8(flags, 0);
-                    }
-                    else if (pointsCount == 2)
-                    {
-                        appendUInt8(flags, 0);
-                    }
-                    
-                    appendUInt8(flags, 1 << 0);
+                    numberOfPoints += pointsCount;
                     
                     for (CFIndex index=0; index<pointsCount; index++)
                     {
-                        appendSInt16(xCoordinates, element->points[index].x - previousPoint.x);
-                        appendSInt16(yCoordinates, element->points[index].y - previousPoint.y);
-                        previousPoint = element->points[index];
+                        appendUInt8(flags, index+1==pointsCount ? 1 : 0);
+
+                        SInt16 x = element->points[index].x;
+                        SInt16 y = element->points[index].y;
+                        
+                        appendSInt16(xCoordinates, x - previousX);
+                        appendSInt16(yCoordinates, y - previousY);
+                        
+                        previousX = x;
+                        previousY = y;
                     }
                 }
                 
@@ -152,17 +148,24 @@ CFDataRef MRFontDataCreateWithNameAndPaths(CFStringRef name, UInt16 startCharCod
             // values for head table
             
             fontBoundingBox = CGRectUnion(fontBoundingBox, pathBoundingBox);
-            
+//            NSLog(@"%x %@", pathIndex, NSStringFromCGRect(pathBoundingBox));
             maxContours = MAX(maxContours, numberOfContours);
-            maxPoints = MAX(maxContours, endPointOfPreviousContour);
+            maxPoints = MAX(maxPoints, numberOfPoints);
         }
         
         // hmtx table
         
         appendUInt16(hmtxData, CGRectGetMaxX(pathBoundingBox)); // advanceWidth
         appendSInt16(hmtxData, 0); // left side bearing
+        
+        // Align start of the glyph data to 2 byte words
+        while (CFDataGetLength(glyfData) % 2)
+        {
+            appendUInt8(glyfData, 0);
+        }
+
+        appendUInt32(locaData, CFDataGetLength(glyfData));
     }
-    appendUInt32(locaData, (UInt32) CFDataGetLength(glyfData));
     
     // post table
     
