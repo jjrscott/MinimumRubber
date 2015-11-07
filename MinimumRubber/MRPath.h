@@ -100,3 +100,30 @@ void MRPathAddQuadToPointWithCurve(CGMutablePathRef path,
                                    CGFloat cp2y,
                                    CGFloat x,
                                    CGFloat y);
+
+
+/**
+ @function MRPathGetLength
+    Returns the length of the given path
+ @param path
+    The path.
+ @return
+    The path length
+ */
+CGFloat MRPathGetLength(CGPathRef path);
+
+/**
+ @function MRPathGetCGAffineTransformToPosition
+    Returns the affine transform needed to move to the position on the path.
+ @param path
+    The path.
+ @param position
+    The position on the path.
+ @param rotate
+    If set the tranform will include a rotation to aline with the path at the given position.
+ @return
+    The path length
+ */
+CGAffineTransform MRPathGetCGAffineTransformToPosition(CGPathRef path,
+                                                       const CGFloat position,
+                                                       const BOOL rotate);

@@ -246,3 +246,78 @@ void MRPathAddQuadToPointWithCurve(CGMutablePathRef path,
         CGPathAddQuadCurveToPoint(path, m, controls[index].x, controls[index].y, anchors[index].x, anchors[index].y);
     }
 }
+
+typedef void (^_MRPathStraightBlock)(const CGPoint from, const CGPoint to, BOOL *stop);
+
+void _MRPathStraights(CGPathRef path, _MRPathStraightBlock block)
+{
+    __block CGPoint subpathOriginPoint;
+    __block CGPoint currentPoint;
+    MRPathApply(path, ^(const CGPathElement *element, BOOL *stop)
+                {
+                    if (element->type == kCGPathElementMoveToPoint)
+                    {
+                        subpathOriginPoint = element->points[0];
+                        currentPoint = subpathOriginPoint;
+                    }
+                    else if (element->type == kCGPathElementCloseSubpath)
+                    {
+                        block(currentPoint, subpathOriginPoint, stop);
+                        currentPoint = subpathOriginPoint;
+                    }
+                    else
+                    {
+                        block(currentPoint, element->points[0], stop);
+                        currentPoint = element->points[0];
+                    }
+                });
+}
+
+
+CGFloat MRPathGetLength(CGPathRef path)
+{
+    __block CGFloat length = 0;
+    _MRPathStraights(path, ^(const CGPoint from, const CGPoint to, BOOL *stop)
+                     {
+                         CGFloat dx = to.x - from.x;
+                         CGFloat dy = to.y - from.y;
+                         CGFloat dh = hypot(dx, dy);
+                         length += dh;
+                     });
+    return length;
+}
+
+CGAffineTransform MRPathGetCGAffineTransformToPosition(CGPathRef path,
+                                                       const CGFloat position,
+                                                       const BOOL rotate)
+{
+    __block CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    __block CGFloat offset = 0;
+    _MRPathStraights(path, ^(const CGPoint from, const CGPoint to, BOOL *stop)
+    {
+        CGFloat dx = to.x - from.x;
+        CGFloat dy = to.y - from.y;
+        CGFloat dh = hypot(dx, dy);
+        if (offset + dh > position)
+        {
+            CGFloat cosA = dx/dh;
+            CGFloat sinA = dy/dh;
+            
+            transform = CGAffineTransformTranslate(transform, from.x, from.y);
+            
+            CGFloat fd = position / dh;
+            
+            transform = CGAffineTransformTranslate(transform, dx * fd, dy * fd);
+            if (rotate)
+            {
+                transform = CGAffineTransformConcat(CGAffineTransformMake(cosA, sinA, -sinA, cosA, 0, 0), transform);
+            }
+            *stop = YES;
+        }
+        offset += dh;
+
+    });
+    
+    return transform;
+}
