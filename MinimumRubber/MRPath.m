@@ -306,7 +306,7 @@ CGAffineTransform MRPathGetCGAffineTransformToPosition(CGPathRef path,
             
             transform = CGAffineTransformTranslate(transform, from.x, from.y);
             
-            CGFloat fd = position / dh;
+            CGFloat fd = (position - offset) / dh;
             
             transform = CGAffineTransformTranslate(transform, dx * fd, dy * fd);
             if (rotate)
