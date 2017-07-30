@@ -127,3 +127,17 @@ CGFloat MRPathGetLength(CGPathRef path);
 CGAffineTransform MRPathGetCGAffineTransformToPosition(CGPathRef path,
                                                        const CGFloat position,
                                                        const BOOL rotate);
+
+
+typedef struct MRPathMetrics *MRPathMetricsRef;
+
+MRPathMetricsRef MRPathGetMetrics(CGPathRef path);
+
+void MRPathMetricsFree(MRPathMetricsRef metrics);
+
+CGFloat MRPathMetricsGetLength(MRPathMetricsRef metrics);
+
+CGAffineTransform MRPathMetricGetCGAffineTransformToPosition(MRPathMetricsRef metrics,
+                                                             const CGFloat position,
+                                                             const BOOL rotate);
+

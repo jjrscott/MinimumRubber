@@ -321,3 +321,106 @@ CGAffineTransform MRPathGetCGAffineTransformToPosition(CGPathRef path,
     
     return transform;
 }
+
+struct _MRPathMetricStraight {
+    CGFloat x;
+    CGFloat y;
+    CGFloat dx;
+    CGFloat dy;
+    CGFloat dh;
+    CGFloat cosA;
+    CGFloat sinA;
+};
+
+
+struct MRPathMetrics {
+    CFIndex straightsCount;
+    struct _MRPathMetricStraight *straights;
+    CGFloat totalLength;
+};
+
+MRPathMetricsRef MRPathGetMetrics(CGPathRef path)
+{
+    MRPathMetricsRef metrics = malloc(sizeof(struct MRPathMetrics));
+    metrics->straightsCount = 0;
+    metrics->straights = NULL;
+    metrics->totalLength = 0;
+    
+    _MRPathStraights(path, ^(const CGPoint from, const CGPoint to, BOOL *stop)
+                     {
+                         metrics->straightsCount++;
+                         if (metrics->straights)
+                         {
+                             metrics->straights = realloc(metrics->straights, metrics->straightsCount * sizeof(struct _MRPathMetricStraight));
+                         }
+                         else
+                         {
+                             metrics->straights = malloc(metrics->straightsCount * sizeof(struct _MRPathMetricStraight));
+                         }
+                         
+                         struct _MRPathMetricStraight *straight = metrics->straights + (metrics->straightsCount - 1);
+                         
+                         straight->x = from.x;
+                         straight->y = from.y;
+                         
+                         
+                         straight->dx = to.x - from.x;
+                         straight->dy = to.y - from.y;
+                         straight->dh = hypot(straight->dx, straight->dy);
+                         
+                         straight->cosA = straight->dx/straight->dh;
+                         straight->sinA = straight->dy/straight->dh;
+                         
+                         metrics->totalLength += straight->dh;
+                     });
+    return metrics;
+}
+
+void MRPathMetricsFree(MRPathMetricsRef metrics)
+{
+    if (metrics->straights)
+    {
+        free(metrics->straights);
+    }
+    if (!metrics)
+    {
+        abort();
+    }
+    free(metrics);
+}
+
+CGFloat MRPathMetricsGetLength(MRPathMetricsRef metrics)
+{
+    return metrics->totalLength;
+}
+
+CGAffineTransform MRPathMetricGetCGAffineTransformToPosition(MRPathMetricsRef metrics,
+                                                             const CGFloat position,
+                                                             const BOOL rotate)
+{
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    CGFloat offset = 0;
+    for (CFIndex straightIndex=0; straightIndex<metrics->straightsCount; straightIndex++)
+    {
+        const struct _MRPathMetricStraight *straight = metrics->straights + straightIndex;
+        if (offset + straight->dh > position)
+        {
+            transform = CGAffineTransformTranslate(transform, straight->x, straight->y);
+            
+            CGFloat fd = (position - offset) / straight->dh;
+            
+            transform = CGAffineTransformTranslate(transform, straight->dx * fd, straight->dy * fd);
+            if (rotate)
+            {
+                transform = CGAffineTransformConcat(CGAffineTransformMake(straight->cosA, straight->sinA, -straight->sinA, straight->cosA, 0, 0), transform);
+            }
+            break;
+        }
+        offset += straight->dh;
+        
+    }
+    
+    return transform;
+}
+
