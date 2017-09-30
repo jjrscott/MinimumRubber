@@ -73,6 +73,11 @@ void _MRStringFromCGPathFunction(void *info,
 {
     CFMutableStringRef string = info;
     
+    if (CFStringGetLength(string))
+    {
+        CFStringAppend(string, CFSTR(" "));
+    }
+    
     switch (element->type)
     {
         case kCGPathElementMoveToPoint:
@@ -103,7 +108,7 @@ void _MRStringFromCGPathFunction(void *info,
     
     for (CFIndex index=0; index<pointsCount; index++)
     {
-        CFStringAppendFormat(string, NULL, CFSTR("%.3f %.3f "), element->points[index].x, element->points[index].y);
+        CFStringAppendFormat(string, NULL, CFSTR(" %.3f %.3f"), element->points[index].x, element->points[index].y);
     }
 }
 
